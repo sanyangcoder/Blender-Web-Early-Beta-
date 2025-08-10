@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>GLB Viewer — Blender-style UI + Bones & Empties + Materials + Animation</title>
+<title>GLB Viewer � Blender-style UI + Bones & Empties + Materials + Animation</title>
 <style>
 /* ---------- Basic page ---------- */
 html,body { margin:0; height:100%; background:#111; font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color:#e6e6e6; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
@@ -58,7 +58,7 @@ input[type="number"] { width:60px; background:#2b2b2b; color:#fff; padding:0 8px
 
   <div id="sidebar-body">
     <div class="sidebar-section">
-      <div class="section-header" data-section="transform"><span class="label">Transform</span><span class="chev">▾</span></div>
+      <div class="section-header" data-section="transform"><span class="label">Transform</span><span class="chev">?</span></div>
       <div class="section-content" data-content="transform">
         <div class="control-row">
           <button id="resetBtn" class="ctrl">Reset Transform</button>
@@ -77,7 +77,7 @@ input[type="number"] { width:60px; background:#2b2b2b; color:#fff; padding:0 8px
     </div>
 
     <div class="sidebar-section">
-      <div class="section-header" data-section="lighting"><span class="label">Lighting</span><span class="chev">▾</span></div>
+      <div class="section-header" data-section="lighting"><span class="label">Lighting</span><span class="chev">?</span></div>
       <div class="section-content" data-content="lighting">
         <div class="control-row">
           <label style="font-size:12px;width:100%">Main Point Light Color</label>
@@ -95,7 +95,7 @@ input[type="number"] { width:60px; background:#2b2b2b; color:#fff; padding:0 8px
     </div>
 
     <div class="sidebar-section">
-      <div class="section-header" data-section="materials"><span class="label">Materials</span><span class="chev">▾</span></div>
+      <div class="section-header" data-section="materials"><span class="label">Materials</span><span class="chev">?</span></div>
       <div class="section-content" data-content="materials">
         <div class="control-row">
           <label style="font-size:12px;width:100%">Base Color</label>
@@ -131,7 +131,7 @@ input[type="number"] { width:60px; background:#2b2b2b; color:#fff; padding:0 8px
     </div>
 
     <div class="sidebar-section">
-      <div class="section-header" data-section="scene"><span class="label">Scene / Bones</span><span class="chev">▾</span></div>
+      <div class="section-header" data-section="scene"><span class="label">Scene / Bones</span><span class="chev">?</span></div>
       <div class="section-content" data-content="scene">
         <div class="control-row">
           <button id="toggleSkeletonBtn" class="ctrl">Toggle Skeleton Helpers</button>
@@ -150,12 +150,12 @@ input[type="number"] { width:60px; background:#2b2b2b; color:#fff; padding:0 8px
     </div>
   </div>
 
-  <div id="sidebar-footer">Blender-style UI • Bones & Empties • Materials • Animation • Drag lights</div>
+  <div id="sidebar-footer">Blender-style UI � Bones & Empties � Materials � Animation � Drag lights</div>
 </div>
 
 <!-- Animation Panel (Bottom) -->
 <div id="animation-panel" aria-hidden="false">
-  <div id="animation-panel-header" class="section-header" data-section="animation"><span class="label">Animation</span><span class="chev">▾</span></div>
+  <div id="animation-panel-header" class="section-header" data-section="animation"><span class="label">Animation</span><span class="chev">?</span></div>
   <div id="animation-panel-content" class="section-content" data-content="animation">
     <div class="control-row">
       <label style="font-size:12px;width:100%">Current Frame: <span id="currentFrameValue">0</span></label>
@@ -182,7 +182,7 @@ input[type="number"] { width:60px; background:#2b2b2b; color:#fff; padding:0 8px
 </div>
 
 <!-- Floating handle outside sidebar -->
-<button id="sidebar-handle" title="Toggle sidebar">◀</button>
+<button id="sidebar-handle" title="Toggle sidebar">?</button>
 
 <!-- Add Menu -->
 <div id="addMenu" role="menu" aria-hidden="true">
@@ -215,7 +215,7 @@ function getSidebarWidth(){ if(sidebar.classList.contains('hidden')) return 0; r
 function updateHandlePosition(){ var sw = getSidebarWidth(); var left; if(sidebar.classList.contains('hidden')){ left = 8; } else { left = Math.max(8, sw - 12); } handle.style.left = left + 'px'; }
 function setSidebarCollapsed(collapsed){ if(collapsed) { sidebar.classList.add('collapsed'); } else { sidebar.classList.remove('collapsed'); } updateHandleSymbol(); updateRendererSize(); updateHandlePosition(); }
 function toggleSidebarHidden(){ if(sidebar.classList.contains('hidden')){ sidebar.classList.remove('hidden'); sidebar.classList.remove('collapsed'); } else { sidebar.classList.add('hidden'); } updateHandleSymbol(); updateRendererSize(); updateHandlePosition(); }
-function updateHandleSymbol(){ if(sidebar.classList.contains('hidden')){ handle.innerText = '▶'; } else if(sidebar.classList.contains('collapsed')){ handle.innerText = '▶'; } else { handle.innerText = '◀'; } }
+function updateHandleSymbol(){ if(sidebar.classList.contains('hidden')){ handle.innerText = '?'; } else if(sidebar.classList.contains('collapsed')){ handle.innerText = '?'; } else { handle.innerText = '?'; } }
 handle.addEventListener('click', function(e){ if(sidebar.classList.contains('hidden')){ sidebar.classList.remove('hidden'); sidebar.classList.remove('collapsed'); } else { sidebar.classList.toggle('collapsed'); } updateHandleSymbol(); updateRendererSize(); updateHandlePosition(); });
 window.addEventListener('keydown', function(e){ if(e.key.toLowerCase() === 'k'){ toggleSidebarHidden(); } });
 sections.forEach(function(h){ h.addEventListener('click', function(){ var sec = h.getAttribute('data-section'); var content = document.querySelector('[data-content="'+sec+'"]'); if(!content) return; var isHidden = content.style.display === 'none' || content.style.display === ''; if(isHidden){ content.style.display = 'block'; h.classList.remove('collapsed'); } else { content.style.display = 'none'; h.classList.add('collapsed'); } }); });
