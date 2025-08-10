@@ -2,78 +2,190 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>GLB Viewer — More Lighting Options & Dragging</title>
+<title>GLB Viewer — Blender-style UI + Bones & Empties + Materials + Animation</title>
 <style>
-html,body {margin:0;height:100%;overflow:hidden;background:#111;}
-#info {
-  position:absolute;top:10px;left:10px;
-  background:rgba(0,0,0,0.5);color:#fff;
-  padding:8px 12px;font-family:sans-serif;border-radius:6px;
-  user-select:none;
-  z-index: 10;
-}
-#dropzone {
-  position:absolute;top:0;left:0;right:0;bottom:0;
-  background:rgba(255,255,255,0.05);
-  color:white;font-size:20px;
-  display:none;justify-content:center;align-items:center;
-  pointer-events:none;
-  z-index: 5;
-}
-button {
-  margin: 5px 5px 0 0;
-  background: #222;
-  color: #eee;
-  border: none;
-  padding: 5px 10px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-button:hover { background: #444; }
-
-/* Shift+A menu styles */
-#addMenu {
-  position: absolute;
-  background: #222;
-  border: 1px solid #555;
-  border-radius: 6px;
-  box-shadow: 0 0 10px #000;
-  display: none;
-  color: white;
-  font-family: sans-serif;
-  z-index: 20;
-  min-width: 140px;
-  user-select:none;
-}
-#addMenu div {
-  padding: 8px 12px;
-  cursor: pointer;
-  border-bottom: 1px solid #444;
-}
-#addMenu div:last-child {
-  border-bottom: none;
-}
-#addMenu div:hover {
-  background: #444;
-}
+/* ---------- Basic page ---------- */
+html,body { margin:0; height:100%; background:#111; font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color:#e6e6e6; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+canvas { display:block; }
+/* ---------- Sidebar (Blender-ish) ---------- */
+#sidebar { position: absolute; top: 0; left: 0; width: 260px; height: 100%; background: linear-gradient(#2b2b2b, #262626); border-right: 1px solid rgba(255,255,255,0.04); box-shadow: 0 6px 18px rgba(0,0,0,0.6); z-index: 30; overflow: hidden; display: flex; flex-direction: column; transition: width 180ms ease, left 180ms ease; }
+#sidebar.collapsed { width: 36px; }
+#sidebar.hidden { display: none; }
+#sidebar-top { height: 36px; display:flex; align-items:center; justify-content:space-between; padding: 0 8px; background: linear-gradient(#333,#2b2b2b); border-bottom: 1px solid rgba(255,255,255,0.03); box-sizing: border-box; flex: 0 0 36px; }
+#sidebar-title { font-size:13px; font-weight:600; letter-spacing:0.2px; color:#f1f1f1; display:flex; align-items:center; gap:8px; }
+#sidebar-title .dot { width:9px;height:9px;border-radius:50%; background: linear-gradient(45deg, #ffb86b, #ff7b7b); box-shadow: 0 0 6px rgba(255,140,80,0.2); }
+#sidebar-handle { position: absolute; top: 8px; left: 260px; width:34px; height:34px; border-radius:8px; display:flex;align-items:center;justify-content:center; background: linear-gradient(#2f2f2f,#272727); border:1px solid rgba(255,255,255,0.04); color:#e8e8e8; font-weight:700; cursor:pointer; z-index: 40; box-shadow: 0 6px 18px rgba(0,0,0,0.45); transition: left 160ms ease, background 120ms; }
+#sidebar-handle:hover { background: linear-gradient(#3a3a3a,#2f2f2f); }
+#sidebar-body { overflow-y: auto; padding-bottom: 12px; flex: 1 1 auto; }
+.sidebar-section { border-top: 1px solid rgba(255,255,255,0.02); }
+.section-header { background: linear-gradient(#2f2f2f,#2a2a2a); padding: 8px 10px; font-size:12px; font-weight:700; color:#ddd; display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; }
+.section-header .chev { font-size:11px; opacity:0.7; transform:rotate(0deg); transition: transform 150ms ease; }
+.section-header.collapsed .chev { transform: rotate(-90deg); opacity:0.5; }
+.section-content { padding: 10px; font-size:13px; color:#ddd; display:block; }
+.control-row { margin-bottom:8px; display:flex; gap:8px; align-items:center; }
+button.ctrl { width:100%; background:#3b3b3b; color:#fff; border:1px solid rgba(255,255,255,0.03); padding:7px 8px; border-radius:6px; font-size:13px; cursor:pointer; transition: background 110ms; }
+button.ctrl:hover { background:#4a4a4a; }
+.small { width:48%; padding:6px 8px; font-size:12px; }
+input[type="color"], input[type="range"], input[type="file"], input[type="number"] { height:34px; border-radius:6px; padding:0; border:1px solid rgba(255,255,255,0.03); }
+input[type="range"] { width:100%; }
+input[type="number"] { width:60px; background:#2b2b2b; color:#fff; padding:0 8px; }
+.instructions { font-size:12px; color:#cfcfcf; line-height:1.35; opacity:0.95; }
+#addMenu { position: absolute; background: #222; border: 1px solid #444; border-radius: 6px; box-shadow: 0 8px 28px rgba(0,0,0,0.6); display: none; color: #fff; font-family: sans-serif; z-index: 60; min-width: 160px; user-select:none; overflow:hidden; }
+#addMenu div { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03); background: linear-gradient(#2b2b2b,#262626); }
+#addMenu div:last-child { border-bottom: none; }
+#addMenu div:hover { background: rgba(255,255,255,0.03); }
+#dropzone { position:absolute;top:0;left:0;right:0;bottom:0; background:rgba(255,255,255,0.03); color:white;font-size:20px; display:none;justify-content:center;align-items:center; pointer-events:none; z-index: 20; }
+#sidebar.collapsed .section-header .label { display:none; }
+#sidebar.collapsed .section-content { display:none; }
+#sidebar-footer { padding:8px; font-size:11px; color:#bdbdbd; border-top: 1px solid rgba(255,255,255,0.02); background: linear-gradient(#262626,#242424); flex: 0 0 auto; }
+/* ---------- Animation Panel (Bottom) ---------- */
+#animation-panel { position: absolute; bottom: 0; left: 0; right: 0; height: 120px; background: linear-gradient(#2b2b2b, #262626); border-top: 1px solid rgba(255,255,255,0.04); box-shadow: 0 -6px 18px rgba(0,0,0,0.6); z-index: 30; display: flex; flex-direction: column; padding: 8px; box-sizing: border-box; }
+#animation-panel.collapsed { height: 28px; }
+#animation-panel-header { height: 28px; display:flex; align-items:center; justify-content:space-between; padding: 0 8px; background: linear-gradient(#333,#2b2b2b); border-bottom: 1px solid rgba(255,255,255,0.03); font-size:12px; font-weight:700; color:#ddd; cursor:pointer; user-select:none; }
+#animation-panel-header .chev { font-size:11px; opacity:0.7; transition: transform 150ms ease; }
+#animation-panel-header.collapsed .chev { transform: rotate(-90deg); opacity:0.5; }
+#animation-panel-content { padding: 10px; font-size:13px; color:#ddd; display:block; }
+#animation-panel.collapsed #animation-panel-content { display: none; }
+@media (max-width:700px) { #sidebar { width:220px; } #sidebar.collapsed { width:36px; } }
 </style>
 </head>
 <body>
-<div id="info">
-  Drop a .glb file anywhere.<br>
-  Drag glowing spheres = move lights.<br>
-  <b>G</b>=Move, <b>R</b>=Rotate, <b>S</b>=Scale model.<br>
-  Hold <b>Shift</b> to disable snapping while transforming.<br><br>
-  <button id="resetBtn">Reset Transform</button>
-  <button id="toggleWireframeBtn">Toggle Wireframe</button>
-  <button id="toggleGridBtn">Toggle Grid</button><br>
-  <label for="lightColor">Main Point Light Color:</label>
-  <input type="color" id="lightColor" value="#ffccaa" style="vertical-align:middle;"><br>
-  <button id="toggleSpotlightsBtn">Toggle Spotlights</button>
-  <button id="toggleAreaLightsBtn">Toggle Area Lights</button>
+<!-- Sidebar -->
+<div id="sidebar" aria-hidden="false">
+  <div id="sidebar-top">
+    <div id="sidebar-title"><span class="dot"></span><span style="font-size:12px">GLB Viewer</span></div>
+  </div>
+
+  <div id="sidebar-body">
+    <div class="sidebar-section">
+      <div class="section-header" data-section="transform"><span class="label">Transform</span><span class="chev">▾</span></div>
+      <div class="section-content" data-content="transform">
+        <div class="control-row">
+          <button id="resetBtn" class="ctrl">Reset Transform</button>
+        </div>
+        <div class="control-row">
+          <button id="toggleWireframeBtn" class="ctrl small">Toggle Wireframe</button>
+          <button id="toggleGridBtn" class="ctrl small">Toggle Grid</button>
+        </div>
+        <div style="height:6px"></div>
+        <div class="instructions">
+          <b>G</b> = Move &nbsp; <b>R</b> = Rotate &nbsp; <b>S</b> = Scale<br>
+          Hold <b>Shift</b> to disable snapping while transforming.<br>
+          <b>Shift + A</b> to open Add Menu.
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-header" data-section="lighting"><span class="label">Lighting</span><span class="chev">▾</span></div>
+      <div class="section-content" data-content="lighting">
+        <div class="control-row">
+          <label style="font-size:12px;width:100%">Main Point Light Color</label>
+        </div>
+        <div class="control-row">
+          <input type="color" id="lightColor" value="#ffccaa">
+        </div>
+        <div class="control-row">
+          <button id="toggleSpotlightsBtn" class="ctrl small">Toggle Spotlights</button>
+          <button id="toggleAreaLightsBtn" class="ctrl small">Toggle Area Lights</button>
+        </div>
+        <div style="height:6px"></div>
+        <div class="instructions">Drag the glowing spheres in the scene to move lights. Spawn lights with <b>Shift+A</b>.</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-header" data-section="materials"><span class="label">Materials</span><span class="chev">▾</span></div>
+      <div class="section-content" data-content="materials">
+        <div class="control-row">
+          <label style="font-size:12px;width:100%">Base Color</label>
+        </div>
+        <div class="control-row">
+          <input type="color" id="materialColor" value="#999999">
+        </div>
+        <div class="control-row">
+          <label style="font-size:12px;width:100%">Roughness: <span id="roughnessValue">0.6</span></label>
+        </div>
+        <div class="control-row">
+          <input type="range" id="roughnessSlider" min="0" max="1" step="0.01" value="0.6">
+        </div>
+        <div class="control-row">
+          <label style="font-size:12px;width:100%">Metalness: <span id="metalnessValue">0.2</span></label>
+        </div>
+        <div class="control-row">
+          <input type="range" id="metalnessSlider" min="0" max="1" step="0.01" value="0.2">
+        </div>
+        <div class="control-row">
+          <input type="file" id="textureInput" accept="image/*">
+        </div>
+        <div class="control-row">
+          <button id="resetMaterialBtn" class="ctrl">Reset Material</button>
+        </div>
+        <div style="height:6px"></div>
+        <div class="instructions">
+          Select a mesh to modify its material.<br>
+          Upload an image for texture or adjust color, roughness, and metalness.<br>
+          Drop an image file anywhere to apply as texture.
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-header" data-section="scene"><span class="label">Scene / Bones</span><span class="chev">▾</span></div>
+      <div class="section-content" data-content="scene">
+        <div class="control-row">
+          <button id="toggleSkeletonBtn" class="ctrl">Toggle Skeleton Helpers</button>
+        </div>
+        <div class="control-row">
+          <button id="toggleBoneBallsBtn" class="ctrl small">Toggle Bone Handles</button>
+          <button id="toggleEmptyAxesBtn" class="ctrl small">Toggle Empty Axes</button>
+        </div>
+        <div style="height:6px"></div>
+        <div class="instructions">
+          Drop a <b>.glb</b> or <b>image</b> anywhere to add to the scene or apply as texture.<br>
+          Skeletons (bones) will show helper lines + small handles for selection.<br>
+          "Empties" are shown as small axes helpers and can be selected/moved.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sidebar-footer">Blender-style UI • Bones & Empties • Materials • Animation • Drag lights</div>
 </div>
 
-<div id="addMenu">
+<!-- Animation Panel (Bottom) -->
+<div id="animation-panel" aria-hidden="false">
+  <div id="animation-panel-header" class="section-header" data-section="animation"><span class="label">Animation</span><span class="chev">▾</span></div>
+  <div id="animation-panel-content" class="section-content" data-content="animation">
+    <div class="control-row">
+      <label style="font-size:12px;width:100%">Current Frame: <span id="currentFrameValue">0</span></label>
+      <input type="range" id="frameSlider" min="0" max="100" step="1" value="0" style="width:60%">
+    </div>
+    <div class="control-row">
+      <button id="setKeyframeBtn" class="ctrl small">Set Keyframe</button>
+      <button id="deleteKeyframeBtn" class="ctrl small">Delete Keyframe</button>
+      <button id="playPauseBtn" class="ctrl small">Play</button>
+      <button id="toggleLoopBtn" class="ctrl small">Loop: Off</button>
+    </div>
+    <div class="control-row">
+      <label style="font-size:12px">Frame:</label>
+      <input type="number" id="frameInput" min="0" max="100" value="0">
+      <button id="goToFrameBtn" class="ctrl small">Go</button>
+    </div>
+    <div class="instructions">
+      Select an object to animate.<br>
+      Use <b>Set Keyframe</b> to save position/rotation/scale at the current frame.<br>
+      <b>Play</b> to animate, <b>Loop</b> to repeat animation.<br>
+      Adjust frame with slider or input.
+    </div>
+  </div>
+</div>
+
+<!-- Floating handle outside sidebar -->
+<button id="sidebar-handle" title="Toggle sidebar">◀</button>
+
+<!-- Add Menu -->
+<div id="addMenu" role="menu" aria-hidden="true">
   <div data-type="cube">Add Cube</div>
   <div data-type="cone">Add Cone</div>
   <div data-type="sphere">Add Sphere</div>
@@ -82,8 +194,10 @@ button:hover { background: #444; }
   <div data-type="arealight">Add Area Light</div>
 </div>
 
-<div id="dropzone">Drop your .glb file here</div>
+<!-- Dropzone -->
+<div id="dropzone">Drop your .glb or image file here</div>
 
+<!-- Three.js libs -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.120.1/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.120.1/examples/js/controls/OrbitControls.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.120.1/examples/js/controls/TransformControls.js"></script>
@@ -91,7 +205,44 @@ button:hover { background: #444; }
 <script src="https://cdn.jsdelivr.net/npm/three@0.120.1/examples/js/lights/RectAreaLightUniformsLib.js"></script>
 
 <script>
-/* ============== INIT RectAreaLight support =============== */
+/* =========================
+   UI wiring (floating handle / collapse / hide)
+   ========================= */
+var sidebar = document.getElementById('sidebar');
+var handle = document.getElementById('sidebar-handle');
+var sections = Array.from(document.querySelectorAll('.section-header'));
+function getSidebarWidth(){ if(sidebar.classList.contains('hidden')) return 0; return sidebar.classList.contains('collapsed') ? 36 : sidebar.getBoundingClientRect().width || 260; }
+function updateHandlePosition(){ var sw = getSidebarWidth(); var left; if(sidebar.classList.contains('hidden')){ left = 8; } else { left = Math.max(8, sw - 12); } handle.style.left = left + 'px'; }
+function setSidebarCollapsed(collapsed){ if(collapsed) { sidebar.classList.add('collapsed'); } else { sidebar.classList.remove('collapsed'); } updateHandleSymbol(); updateRendererSize(); updateHandlePosition(); }
+function toggleSidebarHidden(){ if(sidebar.classList.contains('hidden')){ sidebar.classList.remove('hidden'); sidebar.classList.remove('collapsed'); } else { sidebar.classList.add('hidden'); } updateHandleSymbol(); updateRendererSize(); updateHandlePosition(); }
+function updateHandleSymbol(){ if(sidebar.classList.contains('hidden')){ handle.innerText = '▶'; } else if(sidebar.classList.contains('collapsed')){ handle.innerText = '▶'; } else { handle.innerText = '◀'; } }
+handle.addEventListener('click', function(e){ if(sidebar.classList.contains('hidden')){ sidebar.classList.remove('hidden'); sidebar.classList.remove('collapsed'); } else { sidebar.classList.toggle('collapsed'); } updateHandleSymbol(); updateRendererSize(); updateHandlePosition(); });
+window.addEventListener('keydown', function(e){ if(e.key.toLowerCase() === 'k'){ toggleSidebarHidden(); } });
+sections.forEach(function(h){ h.addEventListener('click', function(){ var sec = h.getAttribute('data-section'); var content = document.querySelector('[data-content="'+sec+'"]'); if(!content) return; var isHidden = content.style.display === 'none' || content.style.display === ''; if(isHidden){ content.style.display = 'block'; h.classList.remove('collapsed'); } else { content.style.display = 'none'; h.classList.add('collapsed'); } }); });
+document.querySelectorAll('.section-content').forEach(function(c){ c.style.display = 'block'; });
+window.addEventListener('resize', function(){ updateRendererSize(); updateHandlePosition(); });
+updateHandleSymbol(); updateHandlePosition();
+
+/* Animation Panel Collapse */
+var animationPanel = document.getElementById('animation-panel');
+var animationHeader = document.getElementById('animation-panel-header');
+animationHeader.addEventListener('click', function() {
+  var isCollapsed = animationPanel.classList.contains('collapsed');
+  if (isCollapsed) {
+    animationPanel.classList.remove('collapsed');
+    document.getElementById('animation-panel-content').style.display = 'block';
+    animationHeader.classList.remove('collapsed');
+  } else {
+    animationPanel.classList.add('collapsed');
+    document.getElementById('animation-panel-content').style.display = 'none';
+    animationHeader.classList.add('collapsed');
+  }
+  updateRendererSize();
+});
+
+/* =========================
+   INIT RectAreaLight support
+   ========================= */
 THREE.RectAreaLightUniformsLib.init();
 
 /* =========================
@@ -99,75 +250,67 @@ THREE.RectAreaLightUniformsLib.init();
    ========================= */
 var scene = new THREE.Scene();
 scene.background = new THREE.Color(0x111111);
-
-var camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
+var camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
 camera.position.set(3,3,6);
-
 var renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1.5, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
+function updateRendererSize(){ 
+  var sw = getSidebarWidth(); 
+  var apHeight = animationPanel.classList.contains('collapsed') ? 28 : 120; 
+  var w = Math.max(160, window.innerWidth - sw); 
+  var h = window.innerHeight - apHeight; 
+  renderer.setSize(w, h); 
+  renderer.domElement.style.position = 'absolute'; 
+  renderer.domElement.style.left = sw + 'px'; 
+  renderer.domElement.style.top = '0px'; 
+  camera.aspect = w / h; 
+  camera.updateProjectionMatrix(); 
+}
+window.addEventListener('resize', updateRendererSize);
+updateRendererSize();
 
+/* -------------------------
+   OrbitControls - SNAPPY
+   ------------------------- */
 var controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
+controls.enableDamping = false;
 
 /* =========================
    Transform Controls
    ========================= */
 var transformControls = new THREE.TransformControls(camera, renderer.domElement);
-transformControls.addEventListener('dragging-changed', function (event) {
-  controls.enabled = !event.value;
-});
+transformControls.addEventListener('dragging-changed', function (event) { controls.enabled = !event.value; });
 scene.add(transformControls);
 
 /* =========================
    Lights / Ground / Helpers
    ========================= */
-var hemi = new THREE.HemisphereLight(0x808080, 0x202020, 0.25);
-scene.add(hemi);
-
-var dir = new THREE.DirectionalLight(0xffffff, 0.18);
-dir.position.set(-5,8,2);
-dir.castShadow = true;
-scene.add(dir);
-
+var hemi = new THREE.HemisphereLight(0x808080, 0x202020, 0.25); scene.add(hemi);
+var dir = new THREE.DirectionalLight(0xffffff, 0.18); dir.position.set(-5,8,2); dir.castShadow = true; scene.add(dir);
 var gmat = new THREE.MeshStandardMaterial({color:0x222222, roughness:0.9, metalness:0.05});
-var ground = new THREE.Mesh(new THREE.PlaneBufferGeometry(50,50), gmat);
-ground.rotation.x = -Math.PI/2;
-ground.position.y = -1.2;
-ground.receiveShadow = true;
-scene.add(ground);
-
-var gridHelper = new THREE.GridHelper(50, 50, 0x444444, 0x222222);
-gridHelper.position.y = -1.19;
-scene.add(gridHelper);
-gridHelper.visible = true;
-
-/* Main point light + draggable sphere */
-var pointLight = new THREE.PointLight(0xffccaa, 2.2, 20, 2);
-pointLight.castShadow = true;
-pointLight.position.set(3,2,0);
-scene.add(pointLight);
-
+var ground = new THREE.Mesh(new THREE.PlaneBufferGeometry(50,50), gmat); ground.rotation.x = -Math.PI/2; ground.position.y = -1.2; ground.receiveShadow = true; scene.add(ground);
+var gridHelper = new THREE.GridHelper(50, 50, 0x444444, 0x222222); gridHelper.position.y = -1.19; scene.add(gridHelper); gridHelper.visible = true;
+var pointLight = new THREE.PointLight(0xffccaa, 2.2, 20, 2); pointLight.castShadow = true; pointLight.position.set(3,2,0); scene.add(pointLight);
 var sGeo = new THREE.SphereBufferGeometry(0.12, 16, 12);
 var sMat = new THREE.MeshStandardMaterial({emissive:0xffaa66, emissiveIntensity:1, metalness:1, roughness:0.2});
-var lightSphere = new THREE.Mesh(sGeo, sMat);
-lightSphere.position.copy(pointLight.position);
-scene.add(lightSphere);
-
-/* Materials for other light spheres */
+var lightSphere = new THREE.Mesh(sGeo, sMat); lightSphere.position.copy(pointLight.position); scene.add(lightSphere);
 var spotLightSphereMat = new THREE.MeshStandardMaterial({emissive: 0x66aaff, emissiveIntensity: 1, metalness: 1, roughness: 0.2});
 var areaLightSphereMat = new THREE.MeshStandardMaterial({emissive: 0xff66cc, emissiveIntensity: 1, metalness: 1, roughness: 0.2});
 
 /* =========================
    Selectable objects storage
    ========================= */
-var selectableObjects = []; // top-level selectable objects
+var selectableObjects = []; // objects that raycaster will consider
 
-/* helper to find top-level selectable root */
+/* helper to find top-level selectable root or target for helpers */
 function getSelectableRoot(obj) {
   if (!obj) return null;
+  if (obj.userData && obj.userData.bone) return obj.userData.bone;
+  if (obj.userData && obj.userData.emptyNode) return obj.userData.emptyNode;
+  if (obj.userData && obj.userData.pointLight) return obj;
   var cur = obj;
   while (cur.parent && cur.parent !== scene) {
     cur = cur.parent;
@@ -179,125 +322,337 @@ function getSelectableRoot(obj) {
    GLTF Loader
    ========================= */
 var loader = new THREE.GLTFLoader();
-
+var textureLoader = new THREE.TextureLoader();
 var currentSelection = null;
 var originalTransform = null;
+var originalMaterial = null;
 
-function selectRootObject(root) {
-  if (!root) return;
-  currentSelection = root;
-  transformControls.attach(root);
-  originalTransform = {
-    position: root.position.clone(),
-    rotation: root.rotation.clone(),
-    scale: root.scale.clone()
-  };
+/* highlight handling (edges for meshes) */
+var highlightLines = [];
+function removeHighlightLines() {
+  if (!highlightLines || highlightLines.length === 0) return;
+  highlightLines.forEach(function(item) {
+    try { if (item.parent && item.line) item.parent.remove(item.line); if (item.line && item.line.geometry) item.line.geometry.dispose(); if (item.line && item.line.material) item.line.material.dispose(); } catch(e){}
+  });
+  highlightLines = [];
 }
-
-function deselect() {
-  currentSelection = null;
-  originalTransform = null;
-  transformControls.detach();
+function createHighlightEdges(root) {
+  removeHighlightLines();
+  if (!root) return;
+  var outlineColor = 0xffff66;
+  var lineMat = new THREE.LineBasicMaterial({ color: outlineColor, linewidth: 2, depthTest: false, depthWrite: false });
+  root.traverse(function(node){ if (node.isMesh) {
+      try {
+        var edgesGeo = new THREE.EdgesGeometry(node.geometry);
+        var line = new THREE.LineSegments(edgesGeo, lineMat.clone());
+        line.renderOrder = 9999;
+        node.add(line);
+        highlightLines.push({ parent: node, line: line });
+      } catch (err) { console.warn('Could not create edges for mesh:', node.name, err); }
+    }
+  });
 }
 
 /* =========================
-   Drag & Drop GLB support
+   Skeleton & Empty helpers management
+   ========================= */
+var skeletonHelpers = []; // SkeletonHelper objects
+var boneHandleBalls = []; // small spheres parented to bones used for selection
+var emptyAxes = []; // AxesHelper for empties
+
+function addSkeletonHelpersForModel(modelRoot) {
+  var skinnedMeshes = [];
+  modelRoot.traverse(function(n){ if (n.isSkinnedMesh) skinnedMeshes.push(n); });
+  if (skinnedMeshes.length === 0) return;
+  var skelHelper = new THREE.SkeletonHelper(modelRoot);
+  skelHelper.material.linewidth = 2;
+  skelHelper.visible = true;
+  scene.add(skelHelper);
+  skeletonHelpers.push(skelHelper);
+  skinnedMeshes.forEach(function(skinned){
+    var skeleton = skinned.skeleton;
+    if (!skeleton) return;
+    skeleton.bones.forEach(function(bone){
+      var ballMat = new THREE.MeshStandardMaterial({emissive:0x66ff66, metalness:0.8, roughness:0.3});
+      var ball = new THREE.Mesh(new THREE.SphereBufferGeometry(0.06, 10, 8), ballMat);
+      bone.add(ball);
+      ball.userData.bone = bone;
+      ball.userData.isBoneBall = true;
+      boneHandleBalls.push(ball);
+      selectableObjects.push(ball);
+    });
+  });
+}
+
+function addEmptyHelpersForModel(modelRoot) {
+  modelRoot.traverse(function(node){
+    if (!node.isMesh && !node.isCamera && !node.isLight) {
+      var hasGeomChild = false;
+      node.traverse(function(c){ if (c !== node && c.isMesh) hasGeomChild = true; });
+      if (!hasGeomChild) {
+        if (node === modelRoot) return;
+        var a = new THREE.AxesHelper(0.25);
+        a.userData.emptyNode = node;
+        node.add(a);
+        emptyAxes.push(a);
+        selectableObjects.push(a);
+      }
+    }
+  });
+}
+
+/* =========================
+   Animation System
+   ========================= */
+var keyframes = new Map(); // Map<object, Map<frame, {position, rotation, scale}>>
+var currentFrame = 0;
+var isPlaying = false;
+var loopAnimation = false;
+var animationStartTime = 0;
+var maxFrame = 100;
+var fps = 30;
+
+function setKeyframe() {
+  if (!currentSelection) {
+    alert('Please select an object to set a keyframe.');
+    return;
+  }
+  if (!keyframes.has(currentSelection)) {
+    keyframes.set(currentSelection, new Map());
+  }
+  var frameData = {
+    position: currentSelection.position.clone(),
+    rotation: currentSelection.rotation.clone(),
+    scale: currentSelection.scale.clone()
+  };
+  keyframes.get(currentSelection).set(currentFrame, frameData);
+}
+
+function deleteKeyframe() {
+  if (!currentSelection || !keyframes.has(currentSelection)) return;
+  keyframes.get(currentSelection).delete(currentFrame);
+  if (keyframes.get(currentSelection).size === 0) {
+    keyframes.delete(currentSelection);
+  }
+}
+
+function goToFrame(frame) {
+  currentFrame = Math.max(0, Math.min(frame, maxFrame));
+  document.getElementById('frameSlider').value = currentFrame;
+  document.getElementById('currentFrameValue').textContent = currentFrame;
+  document.getElementById('frameInput').value = currentFrame;
+  updateObjectTransforms();
+}
+
+function updateObjectTransforms() {
+  keyframes.forEach((frameMap, obj) => {
+    var frames = Array.from(frameMap.keys()).sort((a, b) => a - b);
+    if (frames.length === 0) return;
+    var prevFrame = frames.find(f => f <= currentFrame) || frames[0];
+    var nextFrame = frames.find(f => f > currentFrame) || prevFrame;
+    if (prevFrame === nextFrame) {
+      var data = frameMap.get(prevFrame);
+      obj.position.copy(data.position);
+      obj.rotation.copy(data.rotation);
+      obj.scale.copy(data.scale);
+    } else {
+      var t = (currentFrame - prevFrame) / (nextFrame - prevFrame);
+      var prevData = frameMap.get(prevFrame);
+      var nextData = frameMap.get(nextFrame);
+      obj.position.lerpVectors(prevData.position, nextData.position, t);
+      var prevQuat = new THREE.Quaternion().setFromEuler(prevData.rotation);
+      var nextQuat = new THREE.Quaternion().setFromEuler(nextData.rotation);
+      obj.quaternion.copy(prevQuat.slerp(nextQuat, t));
+      obj.scale.lerpVectors(prevData.scale, nextData.scale, t);
+    }
+  });
+}
+
+function playAnimation() {
+  if (isPlaying) {
+    isPlaying = false;
+    document.getElementById('playPauseBtn').textContent = 'Play';
+    transformControls.enabled = true;
+  } else {
+    isPlaying = true;
+    document.getElementById('playPauseBtn').textContent = 'Pause';
+    animationStartTime = Date.now() - (currentFrame / fps) * 1000;
+    transformControls.enabled = false;
+  }
+}
+
+/* Animation UI Controls */
+document.getElementById('setKeyframeBtn').addEventListener('click', setKeyframe);
+document.getElementById('deleteKeyframeBtn').addEventListener('click', deleteKeyframe);
+document.getElementById('frameSlider').addEventListener('input', function(e) {
+  goToFrame(parseInt(e.target.value));
+});
+document.getElementById('goToFrameBtn').addEventListener('click', function() {
+  goToFrame(parseInt(document.getElementById('frameInput').value));
+});
+document.getElementById('frameInput').addEventListener('change', function(e) {
+  goToFrame(parseInt(e.target.value));
+});
+document.getElementById('playPauseBtn').addEventListener('click', playAnimation);
+document.getElementById('toggleLoopBtn').addEventListener('click', function() {
+  loopAnimation = !loopAnimation;
+  this.textContent = `Loop: ${loopAnimation ? 'On' : 'Off'}`;
+});
+
+/* =========================
+   Drag & Drop GLB and Texture support
    ========================= */
 var dropzone = document.getElementById("dropzone");
-window.addEventListener("dragover", function(e){
-  e.preventDefault();
-  dropzone.style.display = "flex";
-});
-window.addEventListener("dragleave", function(e){
-  dropzone.style.display = "none";
-});
-window.addEventListener("drop", function(e){
-  e.preventDefault();
-  dropzone.style.display = "none";
-  var file = e.dataTransfer.files && e.dataTransfer.files[0];
-  if(file && file.name.toLowerCase().endsWith(".glb")){
-    var reader = new FileReader();
-    reader.onload = function(ev){
-      var arrayBuffer = ev.target.result;
-      loader.parse(arrayBuffer, '', function(gltf){
-        var modelRoot = gltf.scene;
+window.addEventListener("dragover", function(e){ e.preventDefault(); dropzone.style.display = "flex"; });
+window.addEventListener("dragleave", function(e){ dropzone.style.display = "none"; });
+window.addEventListener("drop", function(e){ e.preventDefault(); dropzone.style.display = "none"; var file = e.dataTransfer.files && e.dataTransfer.files[0]; 
+  if(file && file.name.toLowerCase().endsWith('.glb')){ 
+    var reader = new FileReader(); 
+    reader.onload = function(ev){ 
+      var arrayBuffer = ev.target.result; 
+      loader.parse(arrayBuffer, '', function(gltf){ 
+        var modelRoot = gltf.scene || gltf.scenes[0]; 
         modelRoot.position.set(0,-1.2,0);
-        modelRoot.traverse(function(node){
-          if(node.isMesh){
-            node.castShadow = true;
-            node.receiveShadow = true;
-          }
-        });
-        scene.add(modelRoot);
+        modelRoot.traverse(function(node){ 
+          if(node.isMesh){ 
+            node.castShadow = true; 
+            node.receiveShadow = true; 
+            if (node.material) {
+              var origMat = node.material.clone();
+              origMat.userData = { originalMaterial: true };
+              node.material.userData = { originalMaterial: true };
+              node.userData.originalMaterial = origMat;
+            }
+          } 
+        }); 
+        scene.add(modelRoot); 
+        addSkeletonHelpersForModel(modelRoot); 
+        addEmptyHelpersForModel(modelRoot); 
+        selectableObjects.push(modelRoot); 
+        selectRootObject(modelRoot); 
+      }, function(err){ console.error(err); alert('Error parsing glb'); }); 
+    }; 
+    reader.readAsArrayBuffer(file); 
+    } else if(file && /\.(jpg|jpeg|png)$/i.test(file.name)){ 
+    applyTextureFromFile(file); 
+  } else { 
+    alert('Please drop a .glb or image (.jpg, .png) file.'); 
+  } 
+});
 
-        selectableObjects.push(modelRoot);
-        selectRootObject(modelRoot);
-      }, function(err){ console.error(err); alert("Error parsing glb"); });
-    };
-    reader.readAsArrayBuffer(file);
-  } else {
-    alert("Please drop a .glb file.");
+/* =========================
+   Material and Texture Management
+   ========================= */
+function applyMaterialToSelection(color, roughness, metalness, texture) {
+  if (!currentSelection || !currentSelection.traverse) return;
+  currentSelection.traverse(function(node) {
+    if (node.isMesh && node.material && node.material.isMeshStandardMaterial) {
+      if (color) node.material.color.set(color);
+      if (roughness !== undefined) node.material.roughness = roughness;
+      if (metalness !== undefined) node.material.metalness = metalness;
+      if (texture) {
+        node.material.map = texture;
+        node.material.needsUpdate = true;
+      }
+    }
+  });
+}
+
+function applyTextureFromFile(file) {
+  if (!currentSelection) {
+    alert('Please select a mesh first to apply a texture.');
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    textureLoader.load(e.target.result, function(texture) {
+      texture.flipY = false; // Match Blender's UV orientation
+      applyMaterialToSelection(null, null, null, texture);
+    }, undefined, function(err) {
+      console.error('Error loading texture:', err);
+      alert('Failed to load texture.');
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetMaterial() {
+  if (!currentSelection) return;
+  currentSelection.traverse(function(node) {
+    if (node.isMesh && node.userData.originalMaterial) {
+      node.material = node.userData.originalMaterial.clone();
+      node.material.needsUpdate = true;
+    }
+  });
+}
+
+/* Material UI Controls */
+document.getElementById('materialColor').addEventListener('input', function(e) {
+  applyMaterialToSelection(new THREE.Color(e.target.value), null, null, null);
+});
+document.getElementById('roughnessSlider').addEventListener('input', function(e) {
+  document.getElementById('roughnessValue').textContent = e.target.value;
+  applyMaterialToSelection(null, parseFloat(e.target.value), null, null);
+});
+document.getElementById('metalnessSlider').addEventListener('input', function(e) {
+  document.getElementById('metalnessValue').textContent = e.target.value;
+  applyMaterialToSelection(null, null, parseFloat(e.target.value), null);
+});
+document.getElementById('textureInput').addEventListener('change', function(e) {
+  if (e.target.files && e.target.files[0]) {
+    applyTextureFromFile(e.target.files[0]);
   }
 });
+document.getElementById('resetMaterialBtn').addEventListener('click', resetMaterial);
 
 /* =========================
    Raycasting + Pointer helpers
    ========================= */
 var raycaster = new THREE.Raycaster();
 var pointer = new THREE.Vector2();
-
-function getPointer(event){
-  var rect = renderer.domElement.getBoundingClientRect();
-  pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-  pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-}
+function getPointer(event){ var rect = renderer.domElement.getBoundingClientRect(); pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1; pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1; }
 
 /* =========================
    Light dragging helper
    ========================= */
-function makeLightDraggable(sphereMesh, lightObj){
-  sphereMesh.userData.pointLight = lightObj;
-
-  var dragging = false;
-  var plane = new THREE.Plane();
-  var intersect = new THREE.Vector3();
-
-  function onPointerDown(event){
-    getPointer(event);
-    raycaster.setFromCamera(pointer, camera);
-    var intersects = raycaster.intersectObject(sphereMesh, true);
-    if(intersects.length > 0){
-      dragging = true;
-      var camDir = new THREE.Vector3();
-      camera.getWorldDirection(camDir);
-      plane.setFromNormalAndCoplanarPoint(camDir.clone().negate(), sphereMesh.position);
-      controls.enabled = false;
-      event.preventDefault();
-    }
+function makeLightDraggable(sphereMesh, lightObj){ 
+  sphereMesh.userData.pointLight = lightObj; 
+  var dragging = false; 
+  var plane = new THREE.Plane(); 
+  var intersect = new THREE.Vector3(); 
+  function onPointerDown(event){ 
+    getPointer(event); 
+    raycaster.setFromCamera(pointer, camera); 
+    var intersects = raycaster.intersectObject(sphereMesh, true); 
+    if(intersects.length > 0){ 
+      dragging = true; 
+      var camDir = new THREE.Vector3(); 
+      camera.getWorldDirection(camDir); 
+      plane.setFromNormalAndCoplanarPoint(camDir.clone().negate(), sphereMesh.position); 
+      controls.enabled = false; 
+      event.preventDefault(); 
+    } 
   }
-  function onPointerMove(event){
-    if(!dragging) return;
-    getPointer(event);
-    raycaster.setFromCamera(pointer, camera);
-    if(raycaster.ray.intersectPlane(plane, intersect)){
-      intersect.y = Math.max(intersect.y, -0.2);
-      sphereMesh.position.copy(intersect);
-      lightObj.position.copy(intersect);
-    }
+  function onPointerMove(event){ 
+    if(!dragging) return; 
+    getPointer(event); 
+    raycaster.setFromCamera(pointer, camera); 
+    if(raycaster.ray.intersectPlane(plane, intersect)){ 
+      intersect.y = Math.max(intersect.y, -0.2); 
+      sphereMesh.position.copy(intersect); 
+      lightObj.position.copy(intersect); 
+    } 
   }
-  function onPointerUp(event){
-    if(dragging){
-      dragging = false;
-      controls.enabled = true;
-    }
+  function onPointerUp(event){ 
+    if(dragging){ 
+      dragging = false; 
+      controls.enabled = true; 
+    } 
   }
-
   renderer.domElement.addEventListener('pointerdown', onPointerDown);
   renderer.domElement.addEventListener('pointermove', onPointerMove);
   window.addEventListener('pointerup', onPointerUp);
 }
-
-/* attach dragging to main point light sphere */
 makeLightDraggable(lightSphere, pointLight);
 selectableObjects.push(lightSphere);
 
@@ -309,285 +664,345 @@ var dragPlane = new THREE.Plane();
 var dragIntersect = new THREE.Vector3();
 var activeLightBeingDragged = null;
 
-renderer.domElement.addEventListener('pointerdown', function(e){
-  getPointer(e);
+renderer.domElement.addEventListener('pointerdown', function(e){ 
+  if (isPlaying) return; // Disable selection during playback
+  getPointer(e); 
   raycaster.setFromCamera(pointer, camera);
-
   var hits = raycaster.intersectObjects(selectableObjects, true);
-  if(hits.length === 0){
-    deselect();
-    return;
-  }
-
+  if(hits.length === 0){ deselect(); return; }
   var hit = hits[0].object;
-  var hitRoot = getSelectableRoot(hit);
-
-  if(hitRoot && hitRoot.userData && hitRoot.userData.pointLight){
-    activeLightBeingDragged = hitRoot;
-    currentlyDraggingLight = true;
-    var camDir = new THREE.Vector3();
-    camera.getWorldDirection(camDir);
-    dragPlane.setFromNormalAndCoplanarPoint(camDir.clone().negate(), activeLightBeingDragged.position);
-    controls.enabled = false;
-    transformControls.detach();
-    currentSelection = activeLightBeingDragged;
-    originalTransform = null;
-    return;
+  if(hit.userData && hit.userData.pointLight){ 
+    activeLightBeingDragged = hit; 
+    currentlyDraggingLight = true; 
+    var camDir = new THREE.Vector3(); 
+    camera.getWorldDirection(camDir); 
+    dragPlane.setFromNormalAndCoplanarPoint(camDir.clone().negate(), activeLightBeingDragged.position); 
+    controls.enabled = false; 
+    transformControls.detach(); 
+    currentSelection = activeLightBeingDragged; 
+    originalTransform = null; 
+    return; 
   }
-
+  if(hit.userData && hit.userData.bone){ 
+    var bone = hit.userData.bone; 
+    selectBone(bone); 
+    return; 
+  }
+  if(hit.userData && hit.userData.emptyNode){ 
+    var emptyNode = hit.userData.emptyNode; 
+    selectEmpty(emptyNode); 
+    return; 
+  }
   var root = getSelectableRoot(hit);
   if(!root) root = hit;
-  if(root === scene) {
-    deselect();
-    return;
-  }
+  if(root === scene){ deselect(); return; }
   selectRootObject(root);
 });
 
-renderer.domElement.addEventListener('pointermove', function(e){
-  getPointer(e);
-  if(currentlyDraggingLight && activeLightBeingDragged){
-    raycaster.setFromCamera(pointer, camera);
-    if(raycaster.ray.intersectPlane(dragPlane, dragIntersect)){
-      dragIntersect.y = Math.max(dragIntersect.y, -0.2);
-      activeLightBeingDragged.position.copy(dragIntersect);
-      if(activeLightBeingDragged.userData.pointLight){
-        activeLightBeingDragged.userData.pointLight.position.copy(dragIntersect);
-      } else if(activeLightBeingDragged === lightSphere) {
-        pointLight.position.copy(dragIntersect);
-      }
-    }
-  }
+renderer.domElement.addEventListener('pointermove', function(e){ 
+  getPointer(e); 
+  if(currentlyDraggingLight && activeLightBeingDragged){ 
+    raycaster.setFromCamera(pointer, camera); 
+    if(raycaster.ray.intersectPlane(dragPlane, dragIntersect)){ 
+      dragIntersect.y = Math.max(dragIntersect.y, -0.2); 
+      activeLightBeingDragged.position.copy(dragIntersect); 
+      if(activeLightBeingDragged.userData.pointLight){ 
+        activeLightBeingDragged.userData.pointLight.position.copy(dragIntersect); 
+      } 
+    } 
+  } 
 });
 
-window.addEventListener('pointerup', function(){
-  if(currentlyDraggingLight){
-    currentlyDraggingLight = false;
-    activeLightBeingDragged = null;
-    controls.enabled = true;
-  }
+window.addEventListener('pointerup', function(){ 
+  if(currentlyDraggingLight){ 
+    currentlyDraggingLight = false; 
+    activeLightBeingDragged = null; 
+    controls.enabled = true; 
+  } 
 });
+
+/* =========================
+   Selection functions
+   ========================= */
+function selectBone(bone){ 
+  if(!bone) return; 
+  currentSelection = bone; 
+  transformControls.attach(bone); 
+  originalTransform = null;
+  removeHighlightLines(); 
+}
+
+function selectEmpty(node){ 
+  if(!node) return; 
+  currentSelection = node; 
+  transformControls.attach(node); 
+  originalTransform = { position: node.position.clone(), rotation: node.rotation.clone(), scale: node.scale.clone() }; 
+  createHighlightEdges(node); 
+}
+
+function selectRootObject(root){ 
+  if(!root) return; 
+  currentSelection = root; 
+  transformControls.attach(root); 
+  originalTransform = { position: root.position.clone(), rotation: root.rotation.clone(), scale: root.scale.clone() }; 
+  createHighlightEdges(root); 
+  root.traverse(function(node) {
+    if (node.isMesh && node.material && node.material.isMeshStandardMaterial) {
+      document.getElementById('materialColor').value = '#' + node.material.color.getHexString();
+      document.getElementById('roughnessSlider').value = node.material.roughness;
+      document.getElementById('roughnessValue').textContent = node.material.roughness;
+      document.getElementById('metalnessSlider').value = node.material.metalness;
+      document.getElementById('metalnessValue').textContent = node.material.metalness;
+    }
+  });
+}
+
+function deselect(){ 
+  currentSelection = null; 
+  originalTransform = null; 
+  transformControls.detach(); 
+  removeHighlightLines(); 
+}
+
+/* =========================
+   Helper: compute object's world-space center
+   ========================= */
+function getObjectWorldCenter(obj){ 
+  if(!obj) return new THREE.Vector3(); 
+  obj.updateWorldMatrix(true, true); 
+  var box = new THREE.Box3().setFromObject(obj); 
+  if(!box || box.isEmpty()){ 
+    return obj.getWorldPosition(new THREE.Vector3()); 
+  } 
+  var center = new THREE.Vector3(); 
+  box.getCenter(center); 
+  return center; 
+}
 
 /* =========================
    Keyboard (G/R/S + Shift snap toggle + Shift+A menu)
    ========================= */
-window.addEventListener('keydown', function(e){
-  if(e.key.toLowerCase() === 'g'){ transformControls.setMode('translate'); }
-  if(e.key.toLowerCase() === 'r'){ transformControls.setMode('rotate'); }
-  if(e.key.toLowerCase() === 's'){ transformControls.setMode('scale'); }
-  if(e.key === 'Shift') {
-    transformControls.setTranslationSnap(null);
-    transformControls.setRotationSnap(null);
-    transformControls.setScaleSnap(null);
-  }
-  if(e.key === 'A' && e.shiftKey) {
-    e.preventDefault();
-    showAddMenu(e.clientX, e.clientY);
-  }
+window.addEventListener('keydown', function(e){ 
+  if (isPlaying) return; // Disable transform controls during playback
+  if(e.key.toLowerCase() === 'g'){ transformControls.setMode('translate'); } 
+  if(e.key.toLowerCase() === 'r'){ transformControls.setMode('rotate'); } 
+  if(e.key.toLowerCase() === 's'){ transformControls.setMode('scale'); } 
+  if(e.key === 'Shift'){ 
+    transformControls.setTranslationSnap(null); 
+    transformControls.setRotationSnap(null); 
+    transformControls.setScaleSnap(null); 
+  } 
+  if(e.key === 'A' && e.shiftKey){ 
+    e.preventDefault(); 
+    showAddMenu(lastPointerX || window.innerWidth/2, lastPointerY || window.innerHeight/2); 
+  } 
 });
-window.addEventListener('keyup', function(e){
-  if(e.key === 'Shift') {
-    transformControls.setTranslationSnap(snapEnabled ? snapStep : null);
-    transformControls.setRotationSnap(snapEnabled ? THREE.Math.degToRad(15) : null);
-    transformControls.setScaleSnap(snapEnabled ? snapStep : null);
-  }
+window.addEventListener('keyup', function(e){ 
+  if(e.key === 'Shift'){ 
+    transformControls.setTranslationSnap(snapEnabled ? snapStep : null); 
+    transformControls.setRotationSnap(snapEnabled ? THREE.Math.degToRad(15) : null); 
+    transformControls.setScaleSnap(snapEnabled ? snapStep : null); 
+  } 
 });
-
-/* =========================
-   Window resize
-   ========================= */
-window.addEventListener('resize', function(){
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+var lastPointerX = null, lastPointerY = null; 
+window.addEventListener('mousemove', function(ev){ 
+  lastPointerX = ev.clientX; 
+  lastPointerY = ev.clientY; 
 });
 
 /* =========================
    Snapping defaults
    ========================= */
-var snapEnabled = true;
-var snapStep = 0.1;
-transformControls.setTranslationSnap(snapEnabled ? snapStep : null);
-transformControls.setRotationSnap(snapEnabled ? THREE.Math.degToRad(15) : null);
+var snapEnabled = true; 
+var snapStep = 0.1; 
+transformControls.setTranslationSnap(snapEnabled ? snapStep : null); 
+transformControls.setRotationSnap(snapEnabled ? THREE.Math.degToRad(15) : null); 
 transformControls.setScaleSnap(snapEnabled ? snapStep : null);
 
 /* =========================
    Reset / Wireframe / Grid / Buttons
    ========================= */
 var wireframeOn = false;
-
-function resetTransform() {
-  if (!currentSelection || !originalTransform) return;
-  currentSelection.position.copy(originalTransform.position);
-  currentSelection.rotation.copy(originalTransform.rotation);
-  currentSelection.scale.copy(originalTransform.scale);
+function resetTransform(){ 
+  if(!currentSelection || !originalTransform) return; 
+  currentSelection.position.copy(originalTransform.position); 
+  currentSelection.rotation.copy(originalTransform.rotation); 
+  currentSelection.scale.copy(originalTransform.scale); 
 }
-
 document.getElementById('resetBtn').onclick = () => { resetTransform(); };
-
-document.getElementById('toggleWireframeBtn').onclick = () => {
-  if (!currentSelection) return;
-  wireframeOn = !wireframeOn;
-  currentSelection.traverse
-    ? currentSelection.traverse((node) => { if (node.isMesh) node.material.wireframe = wireframeOn; })
-    : (currentSelection.material.wireframe = wireframeOn);
+document.getElementById('toggleWireframeBtn').onclick = () => { 
+  if(!currentSelection) return; 
+  wireframeOn = !wireframeOn; 
+  currentSelection.traverse ? currentSelection.traverse((node) => { 
+    if(node.isMesh) node.material.wireframe = wireframeOn; 
+  }) : (currentSelection.material && (currentSelection.material.wireframe = wireframeOn)); 
 };
-
-document.getElementById('toggleGridBtn').onclick = () => {
-  gridHelper.visible = !gridHelper.visible;
-};
+document.getElementById('toggleGridBtn').onclick = () => { gridHelper.visible = !gridHelper.visible; };
 
 /* Light color for main point light */
-document.getElementById('lightColor').addEventListener('input', (e) => {
-  var col = new THREE.Color(e.target.value);
-  pointLight.color = col;
-  sMat.emissive = col;
+document.getElementById('lightColor').addEventListener('input', (e) => { 
+  var col = new THREE.Color(e.target.value); 
+  pointLight.color = col; 
+  sMat.emissive = col; 
 });
 
 /* =========================
    Lighting arrays for toggling
    ========================= */
-var spotLights = [];
+var spotLights = []; 
 var areaLights = [];
-
-/* Helper to add lights to arrays */
-function addSpotLight(spotLight, sphere) {
-  spotLights.push({ light: spotLight, helper: sphere });
+function addSpotLight(spotLight, sphere) { 
+  spotLights.push({ light: spotLight, helper: sphere }); 
 }
-function addAreaLight(areaLight, sphere) {
-  areaLights.push({ light: areaLight, helper: sphere });
+function addAreaLight(areaLight, sphere) { 
+  areaLights.push({ light: areaLight, helper: sphere }); 
 }
 
 /* =========================
    Spawn new objects
    ========================= */
-function createMesh(geometry) {
-  var mat = new THREE.MeshStandardMaterial({color:0x999999, roughness:0.6, metalness:0.2});
-  var mesh = new THREE.Mesh(geometry, mat);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  return mesh;
+function createMesh(geometry){ 
+  var mat = new THREE.MeshStandardMaterial({color:0x999999, roughness:0.6, metalness:0.2}); 
+  var mesh = new THREE.Mesh(geometry, mat); 
+  mesh.castShadow = true; 
+  mesh.receiveShadow = true; 
+  mesh.userData.originalMaterial = mat.clone(); 
+  return mesh; 
 }
-
-function spawnObject(type) {
-  var obj = null;
-  var spawnPos = new THREE.Vector3();
-  camera.getWorldDirection(spawnPos);
-  spawnPos.multiplyScalar(2);
-  spawnPos.add(camera.position);
+function spawnObject(type){ 
+  var obj = null; 
+  var spawnPos = new THREE.Vector3(); 
+  camera.getWorldDirection(spawnPos); 
+  spawnPos.multiplyScalar(2); 
+  spawnPos.add(camera.position); 
   spawnPos.y = Math.max(spawnPos.y, -1);
-
-  switch(type) {
-    case 'cube':
-      obj = createMesh(new THREE.BoxBufferGeometry(1,1,1));
-      break;
-    case 'cone':
-      obj = createMesh(new THREE.ConeBufferGeometry(0.7, 1.5, 16));
-      break;
-    case 'sphere':
-      obj = createMesh(new THREE.SphereBufferGeometry(0.7, 24, 16));
-      break;
-    case 'pointlight':
-      var light = new THREE.PointLight(0xffffff, 1.5, 20, 2);
-      light.position.copy(spawnPos);
-      light.castShadow = true;
-      scene.add(light);
-
-      var glowMat = new THREE.MeshStandardMaterial({emissive:0xffffff, emissiveIntensity:1, metalness:1, roughness:0.2});
-      var glowSphere = new THREE.Mesh(sGeo, glowMat);
-      glowSphere.position.copy(spawnPos);
-      scene.add(glowSphere);
-
-      makeLightDraggable(glowSphere, light);
-      selectableObjects.push(glowSphere);
-      deselect();
-      hideAddMenu();
-      return;
-
-    case 'spotlight':
-      var spotLight = new THREE.SpotLight(0x66aaff, 2, 20, Math.PI / 6, 0.5, 1);
-      spotLight.position.copy(spawnPos);
-      spotLight.castShadow = true;
-      scene.add(spotLight);
-
-      var targetObj = new THREE.Object3D();
-      targetObj.position.set(spawnPos.x, spawnPos.y - 1, spawnPos.z);
-      scene.add(targetObj);
-      spotLight.target = targetObj;
-
-      var spotSphere = new THREE.Mesh(sGeo, spotLightSphereMat);
-      spotSphere.position.copy(spawnPos);
-      scene.add(spotSphere);
-
-      makeLightDraggable(spotSphere, spotLight);
-      selectableObjects.push(spotSphere);
-      addSpotLight(spotLight, spotSphere);
-      deselect();
-      hideAddMenu();
-      return;
-
-    case 'arealight':
-      var areaLight = new THREE.RectAreaLight(0xff66cc, 3, 3, 2);
-      areaLight.position.copy(spawnPos);
-      areaLight.lookAt(spawnPos.x, spawnPos.y - 1, spawnPos.z);
-      scene.add(areaLight);
-
-      var areaSphere = new THREE.Mesh(sGeo, areaLightSphereMat);
-      areaSphere.position.copy(spawnPos);
-      scene.add(areaSphere);
-
-      makeLightDraggable(areaSphere, areaLight);
-      selectableObjects.push(areaSphere);
-      addAreaLight(areaLight, areaSphere);
-      deselect();
-      hideAddMenu();
-      return;
+  switch(type){ 
+    case 'cube': obj = createMesh(new THREE.BoxBufferGeometry(1,1,1)); break; 
+    case 'cone': obj = createMesh(new THREE.ConeBufferGeometry(0.7, 1.5, 16)); break; 
+    case 'sphere': obj = createMesh(new THREE.SphereBufferGeometry(0.7, 24, 16)); break; 
+    case 'pointlight': 
+      var light = new THREE.PointLight(0xffffff, 1.5, 20, 2); 
+      light.position.copy(spawnPos); 
+      light.castShadow = true; 
+      scene.add(light); 
+      var glowMat = new THREE.MeshStandardMaterial({emissive:0xffffff, emissiveIntensity:1, metalness:1, roughness:0.2}); 
+      var glowSphere = new THREE.Mesh(sGeo, glowMat); 
+      glowSphere.position.copy(spawnPos); 
+      scene.add(glowSphere); 
+      makeLightDraggable(glowSphere, light); 
+      selectableObjects.push(glowSphere); 
+      deselect(); 
+      hideAddMenu(); 
+      return; 
+    case 'spotlight': 
+      var spotLight = new THREE.SpotLight(0x66aaff, 2, 20, Math.PI / 6, 0.5, 1); 
+      spotLight.position.copy(spawnPos); 
+      spotLight.castShadow = true; 
+      scene.add(spotLight); 
+      var targetObj = new THREE.Object3D(); 
+      targetObj.position.set(spawnPos.x, spawnPos.y - 1, spawnPos.z); 
+      scene.add(targetObj); 
+      spotLight.target = targetObj; 
+      var spotSphere = new THREE.Mesh(sGeo, spotLightSphereMat); 
+      spotSphere.position.copy(spawnPos); 
+      scene.add(spotSphere); 
+      makeLightDraggable(spotSphere, spotLight); 
+      selectableObjects.push(spotSphere); 
+      addSpotLight(spotLight, spotSphere); 
+      deselect(); 
+      hideAddMenu(); 
+      return; 
+    case 'arealight': 
+      var areaLight = new THREE.RectAreaLight(0xff66cc, 3, 3, 2); 
+      areaLight.position.copy(spawnPos); 
+      areaLight.lookAt(spawnPos.x, spawnPos.y - 1, spawnPos.z); 
+      scene.add(areaLight); 
+      var areaSphere = new THREE.Mesh(sGeo, areaLightSphereMat); 
+      areaSphere.position.copy(spawnPos); 
+      scene.add(areaSphere); 
+      makeLightDraggable(areaSphere, areaLight); 
+      selectableObjects.push(areaSphere); 
+      addAreaLight(areaLight, areaSphere); 
+      deselect(); 
+      hideAddMenu(); 
+      return; 
   }
-
-  obj.position.copy(spawnPos);
-  scene.add(obj);
-  selectableObjects.push(obj);
-  selectRootObject(obj);
-  hideAddMenu();
+  if(obj){ 
+    obj.position.copy(spawnPos); 
+    scene.add(obj); 
+    selectableObjects.push(obj); 
+    selectRootObject(obj); 
+    hideAddMenu(); 
+  }
 }
-
-document.querySelectorAll('#addMenu div').forEach(function(item){
-  item.addEventListener('click', function(){
-    spawnObject(this.getAttribute('data-type'));
-  });
+document.querySelectorAll('#addMenu div').forEach(function(item){ 
+  item.addEventListener('click', function(){ 
+    spawnObject(this.getAttribute('data-type')); 
+  }); 
 });
 
 /* =========================
    Toggle Spotlights & Area Lights visibility
    ========================= */
-var spotlightsVisible = true;
+var spotlightsVisible = true; 
 var arealightsVisible = true;
-
-document.getElementById('toggleSpotlightsBtn').onclick = () => {
-  spotlightsVisible = !spotlightsVisible;
-  spotLights.forEach(({light, helper}) => {
-    light.visible = spotlightsVisible;
-    helper.visible = spotlightsVisible;
-  });
+document.getElementById('toggleSpotlightsBtn').onclick = () => { 
+  spotlightsVisible = !spotlightsVisible; 
+  spotLights.forEach(({light, helper}) => { 
+    light.visible = spotlightsVisible; 
+    helper.visible = spotlightsVisible; 
+  }); 
+};
+document.getElementById('toggleAreaLightsBtn').onclick = () => { 
+  arealightsVisible = !arealightsVisible; 
+  areaLights.forEach(({light, helper}) => { 
+    light.visible = arealightsVisible; 
+    helper.visible = arealightsVisible; 
+  }); 
 };
 
-document.getElementById('toggleAreaLightsBtn').onclick = () => {
-  arealightsVisible = !arealightsVisible;
-  areaLights.forEach(({light, helper}) => {
-    light.visible = arealightsVisible;
-    helper.visible = arealightsVisible;
-  });
+/* =========================
+   Toggle skeleton & helper visibility UI
+   ========================= */
+var skeletonVisible = true; 
+var boneBallsVisible = true; 
+var emptyAxesVisible = true;
+document.getElementById('toggleSkeletonBtn').onclick = function(){ 
+  skeletonVisible = !skeletonVisible; 
+  skeletonHelpers.forEach(h => h.visible = skeletonVisible); 
+};
+document.getElementById('toggleBoneBallsBtn').onclick = function(){ 
+  boneBallsVisible = !boneBallsVisible; 
+  boneHandleBalls.forEach(b => b.visible = boneBallsVisible); 
+};
+document.getElementById('toggleEmptyAxesBtn').onclick = function(){ 
+  emptyAxesVisible = !emptyAxesVisible; 
+  emptyAxes.forEach(a => a.visible = emptyAxesVisible); 
 };
 
 /* =========================
    Animation loop
    ========================= */
-function animate(){
-  requestAnimationFrame(animate);
-  var pulse = 1 + Math.sin(Date.now()*0.003)*0.07;
-  pointLight.intensity = 2.2 * pulse;
-  controls.update();
-  renderer.render(scene, camera);
+function animate(){ 
+  requestAnimationFrame(animate); 
+  var pulse = 1 + Math.sin(Date.now()*0.003)*0.07; 
+  pointLight.intensity = 2.2 * pulse; 
+  if (isPlaying) {
+    var elapsed = (Date.now() - animationStartTime) / 1000;
+    currentFrame = Math.floor(elapsed * fps) % (maxFrame + 1);
+    if (!loopAnimation && currentFrame >= maxFrame) {
+      isPlaying = false;
+      currentFrame = maxFrame;
+      document.getElementById('playPauseBtn').textContent = 'Play';
+      transformControls.enabled = true;
+    }
+    document.getElementById('frameSlider').value = currentFrame;
+    document.getElementById('currentFrameValue').textContent = currentFrame;
+    document.getElementById('frameInput').value = currentFrame;
+    updateObjectTransforms();
+  }
+  controls.update(); 
+  renderer.render(scene, camera); 
 }
 animate();
 
@@ -595,15 +1010,29 @@ animate();
    SHIFT + A Add Menu
    ========================= */
 var addMenu = document.getElementById('addMenu');
-function showAddMenu(x, y) {
-  addMenu.style.left = x + 'px';
-  addMenu.style.top = y + 'px';
-  addMenu.style.display = 'block';
+function showAddMenu(x, y) { 
+  addMenu.style.left = Math.max(8, x) + 'px'; 
+  addMenu.style.top = Math.max(8, y) + 'px'; 
+  addMenu.style.display = 'block'; 
+  addMenu.setAttribute('aria-hidden', 'false'); 
 }
-function hideAddMenu() { addMenu.style.display = 'none'; }
-window.addEventListener('click', function(e) {
-  if (!addMenu.contains(e.target)) hideAddMenu();
+function hideAddMenu() { 
+  addMenu.style.display = 'none'; 
+  addMenu.setAttribute('aria-hidden', 'true'); 
+}
+window.addEventListener('click', function(e) { 
+  if (!addMenu.contains(e.target)) hideAddMenu(); 
 });
+
+/* keep handle updated if sidebar toggled by K or other actions elsewhere */
+var observer = new MutationObserver(function(){ 
+  updateHandleSymbol(); 
+  updateHandlePosition(); 
+});
+observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+updateRendererSize(); 
+updateHandlePosition(); 
+updateHandleSymbol();
 </script>
 </body>
 </html>
